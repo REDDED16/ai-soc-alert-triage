@@ -1,21 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.orchestrator import analyze_alert
-from pydantic import BaseModel
+from orchestrator import analyze_alert
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # IMPORTANT for demo
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class AlertRequest(BaseModel):
-    alert_text: str
-
 @app.post("/analyze")
-async def analyze(request: AlertRequest):
-    return await analyze_alert(request.alert_text)
+async def analyze(payload: dict):
+    return await analyze_alert(payload.get("alert_text", ""))
+
+@app.get("/")
+def root():
+    return {"status": "Backend running"}

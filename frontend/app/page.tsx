@@ -15,36 +15,36 @@ export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ HARD-CODED BACKEND URL (IMPORTANT)
-  const API_URL =
-    "https://ai-soc-alert-triage-production.up.railway.app";
-
   const analyzeAlert = async () => {
+    console.log("Analyze button clicked"); // ✅ DEBUG 1
+
     if (!alertText.trim()) return;
 
     setLoading(true);
     setResult(null);
 
     try {
-      const res = await fetch(`${API_URL}/analyze`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          alert_text: alertText,
-        }),
-      });
+      const res = await fetch(
+        "https://ai-soc-alert-triage-production.up.railway.app/analyze",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            alert_text: alertText,
+          }),
+        }
+      );
 
-      if (!res.ok) {
-        throw new Error("API request failed");
-      }
+      console.log("Response status:", res.status); // ✅ DEBUG 2
 
       const data = await res.json();
+      console.log("Response data:", data); // ✅ DEBUG 3
+
       setResult(data);
     } catch (err) {
-      console.error("API error:", err);
-      alert("Backend request failed. Check console.");
+      console.error("API call failed:", err); // ✅ DEBUG 4
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ export default function Home() {
               <button
                 key={i}
                 onClick={() => setAlertText(s)}
-                className="px-3 py-1 text-sm bg-zinc-700 rounded hover:bg-zinc-600"
+                className="px-3 py-1 text-sm bg-zinc-700 rounded"
               >
                 Sample {i + 1}
               </button>
@@ -105,18 +105,10 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Loading */}
-        {loading && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse">
-            <div className="h-3 bg-zinc-700 w-2/3 mb-2" />
-            <div className="h-3 bg-zinc-700 w-1/2" />
-          </div>
-        )}
-
         {/* Result */}
         {result && (
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between">
               <h2 className="text-xl font-semibold">Threat Analysis</h2>
               <span
                 className={`px-3 py-1 rounded text-sm ${severityColor(
@@ -128,17 +120,14 @@ export default function Home() {
             </div>
 
             <p><b>Threat Type:</b> {result.threat_type}</p>
-            <p><b>MITRE ATT&CK:</b> {result.mitre_technique}</p>
+            <p><b>MITRE Technique:</b> {result.mitre_technique}</p>
             <p><b>Impact:</b> {result.impact}</p>
 
-            <div>
-              <p className="font-semibold">Mitigation Steps:</p>
-              <ul className="list-disc list-inside">
-                {result.mitigation_steps.map((m, i) => (
-                  <li key={i}>{m}</li>
-                ))}
-              </ul>
-            </div>
+            <ul className="list-disc list-inside">
+              {result.mitigation_steps.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ul>
           </div>
         )}
 
